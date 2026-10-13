@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Background Patterns */
+
+/* 1. Classic Corkboard */
+.bg-corkboard {
+  background-color: #b5804c;
+  background-image: 
+    radial-gradient(#9c6533 16%, transparent 17%),
+    radial-gradient(#804b1e 16%, transparent 17%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.45);
+}
+
+/* 2. Dark Walnut Study Desk */
+.bg-dark-wood {
+  background-color: #241610;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.015) 0px,
+    rgba(255, 255, 255, 0.015) 2px,
+    transparent 2px,
+    transparent 8px
+  );
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.7);
+}
+
+/* 3. Lofi Midnight Study Desk */
+.bg-lofi-midnight {
+  background-color: #12151e;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.12) 0%, transparent 45%);
+}
+
+/* 3D Pushpin styling */
+.pushpin-3d {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.45), inset -2px -2px 3px rgba(0, 0, 0, 0.4), inset 2px 2px 3px rgba(255, 255, 255, 0.7);
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+}
+
+/* Torn paper effect */
+.torn-paper-edge {
+  position: relative;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(239, 68, 68, 0.2) 8px,
+    rgba(239, 68, 68, 0.2) 16px
+  );
+}
+
+/* Realistic Washi Tape */
+.washi-tape {
+  background: rgba(254, 240, 138, 0.85);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  border-left: 2px dashed rgba(0,0,0,0.1);
+  border-right: 2px dashed rgba(0,0,0,0.1);
+}
