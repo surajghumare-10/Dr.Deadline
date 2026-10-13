@@ -49,74 +49,120 @@
   z-index: 30;
 }
 
-/* Realistic Jagged Torn Paper Edges */
-.torn-edge-bottom {
+/* ==========================================================
+   NATURAL TORN PAPER EDGES (Organic, Irregular, Fibrous)
+   ========================================================== */
+
+/* Organic irregular ripped edge for Top Piece */
+.natural-tear-top {
   clip-path: polygon(
-    0% 0%, 
-    100% 0%, 
-    100% calc(100% - 10px), 
-    95% 100%, 
-    90% calc(100% - 8px), 
-    85% 100%, 
-    80% calc(100% - 9px), 
-    75% 100%, 
-    70% calc(100% - 8px), 
-    65% 100%, 
-    60% calc(100% - 9px), 
-    55% 100%, 
-    50% calc(100% - 8px), 
-    45% 100%, 
-    40% calc(100% - 9px), 
-    35% 100%, 
-    30% calc(100% - 8px), 
-    25% 100%, 
-    20% calc(100% - 9px), 
-    15% 100%, 
-    10% calc(100% - 8px), 
-    5% 100%, 
-    0% calc(100% - 9px)
+    0% 0%,
+    100% 0%,
+    100% calc(100% - 14px),
+    98% calc(100% - 4px),
+    95% calc(100% - 15px),
+    92% calc(100% - 7px),
+    88% calc(100% - 18px),
+    84% calc(100% - 6px),
+    80% calc(100% - 16px),
+    75% calc(100% - 4px),
+    70% calc(100% - 17px),
+    65% calc(100% - 8px),
+    60% calc(100% - 18px),
+    56% calc(100% - 5px),
+    50% calc(100% - 16px),
+    45% calc(100% - 7px),
+    40% calc(100% - 18px),
+    35% calc(100% - 4px),
+    30% calc(100% - 17px),
+    25% calc(100% - 8px),
+    20% calc(100% - 16px),
+    15% calc(100% - 5px),
+    10% calc(100% - 17px),
+    5% calc(100% - 6px),
+    2% calc(100% - 15px),
+    0% calc(100% - 8px)
   );
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+  filter: drop-shadow(0 3px 2px rgba(0,0,0,0.15));
 }
 
-.torn-edge-top {
+/* Organic irregular ripped edge for Bottom Piece */
+.natural-tear-bottom {
   clip-path: polygon(
-    0% 9px, 
-    5% 0%, 
-    10% 8px, 
-    15% 0%, 
-    20% 9px, 
-    25% 0%, 
-    30% 8px, 
-    35% 0%, 
-    40% 9px, 
-    45% 0%, 
-    50% 8px, 
-    55% 0%, 
-    60% 9px, 
-    65% 0%, 
-    70% 8px, 
-    75% 0%, 
-    80% 9px, 
-    85% 0%, 
-    90% 8px, 
-    95% 0%, 
-    100% 10px, 
-    100% 100%, 
+    0% 8px,
+    2% 15px,
+    5% 6px,
+    10% 17px,
+    15% 5px,
+    20% 16px,
+    25% 8px,
+    30% 17px,
+    35% 4px,
+    40% 18px,
+    45% 7px,
+    50% 16px,
+    56% 5px,
+    60% 18px,
+    65% 8px,
+    70% 17px,
+    75% 4px,
+    80% 16px,
+    84% 6px,
+    88% 18px,
+    92% 7px,
+    95% 15px,
+    98% 4px,
+    100% 14px,
+    100% 100%,
     0% 100%
   );
 }
 
-/* Tear Drop Animation */
-@keyframes tear-drop {
-  0% { transform: translateY(0) rotate(0deg); }
-  40% { transform: translateY(18px) rotate(-4deg); }
-  75% { transform: translateY(10px) rotate(-2deg); }
-  100% { transform: translateY(12px) rotate(-3deg); }
+/* White frayed paper fiber deckle edge */
+.paper-fiber-fringe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    #ffffff 0px,
+    #ffffff 2px,
+    rgba(255, 255, 255, 0.4) 2px,
+    rgba(255, 255, 255, 0.4) 5px
+  );
+  opacity: 0.95;
+  filter: blur(0.4px);
+  pointer-events: none;
 }
 
-.animate-tear-drop {
-  animation: tear-drop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+/* Tearing Line Rip Animation (Sweeps from left to right) */
+@keyframes tear-sweep {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.animate-tear-sweep {
+  animation: tear-sweep 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Bottom Paper Drop & Curl Animation */
+@keyframes tear-drop-natural {
+  0% { transform: translateY(0) rotate(0deg); }
+  35% { transform: translateY(22px) rotate(-5deg) skewX(-2deg); }
+  70% { transform: translateY(12px) rotate(-2deg); }
+  100% { transform: translateY(15px) rotate(-3.5deg); }
+}
+
+.animate-tear-drop-natural {
+  animation: tear-drop-natural 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 /* Ink Stamp Slam Animation */
@@ -138,13 +184,28 @@
   border-right: 2px dashed rgba(0,0,0,0.1);
 }
 
-/* 3D Wrinkled Crumpled Paper Ball */
-.crumpled-paper-ball {
-  border-radius: 45% 55% 48% 52% / 55% 45% 55% 45%;
+/* ==========================================================
+   AUTHENTIC WRINKLED PAPER CRUMPLE & TOSS
+   ========================================================== */
+
+/* Wrinkle creases texture that appears as paper folds */
+.wrinkle-crease-overlay {
+  background-image: 
+    linear-gradient(45deg, rgba(0,0,0,0.15) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(0,0,0,0.15) 25%, transparent 25%),
+    linear-gradient(135deg, rgba(0,0,0,0.1) 25%, transparent 25%),
+    linear-gradient(-135deg, rgba(255,255,255,0.4) 25%, transparent 25%);
+  background-size: 20px 20px;
+}
+
+/* 3D Wrinkled Paper Ball (Not a smooth sphere, but a real faceted wad) */
+.lumpy-paper-wad {
+  border-radius: 42% 58% 46% 54% / 54% 44% 56% 46%;
   background: 
-    radial-gradient(circle at 30% 30%, #ffffff 0%, #f1f5f9 25%, #cbd5e1 55%, #64748b 90%, #334155 100%);
+    radial-gradient(circle at 35% 35%, #ffffff 0%, #f8fafc 20%, #cbd5e1 50%, #64748b 85%, #334155 100%),
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 3px, transparent 3px, transparent 8px);
   box-shadow: 
-    inset -5px -5px 10px rgba(0,0,0,0.45),
-    inset 4px 4px 8px rgba(255,255,255,0.7),
-    0 10px 25px rgba(0,0,0,0.5);
+    inset -6px -6px 12px rgba(0,0,0,0.5),
+    inset 5px 5px 10px rgba(255,255,255,0.8),
+    0 12px 28px rgba(0,0,0,0.45);
 }

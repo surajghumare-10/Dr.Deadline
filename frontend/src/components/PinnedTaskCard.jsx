@@ -20,33 +20,49 @@ const CARD_ROTATIONS = [
 
 export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) {
   const cardRef = useRef(null);
-  const [isCrumpling, setIsCrumpling] = useState(false);
-  const [crumpleTransform, setCrumpleTransform] = useState({ x: 0, y: 0 });
+
+  // States for natural animations
+  const [isTearingAnim, setIsTearingAnim] = useState(false);
+  const [crumplePhase, setCrumplePhase] = useState(null); // null | 'wrinkling' | 'wadding' | 'flying'
+  const [targetVector, setTargetVector] = useState({ x: 0, y: 0 });
 
   const pinColor = PIN_COLORS[index % PIN_COLORS.length];
   const defaultRotation = CARD_ROTATIONS[index % CARD_ROTATIONS.length];
 
-  // 1. TACTILE TEAR DONE ACTION
-  const handleToggle = (e) => {
+  // =========================================================================
+  // 1. NATURAL PAPER TEAR
+  // =========================================================================
+  const handleTear = (e) => {
     e.stopPropagation();
     playRipSound();
 
     if (!task.is_done) {
+      // Trigger live unzipping rip seam animation
+      setIsTearingAnim(true);
+
       try {
         confetti({
-          particleCount: 40,
-          spread: 70,
+          particleCount: 45,
+          spread: 65,
           origin: { y: 0.65 },
-          colors: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#ffffff']
+          colors: ['#ffffff', '#fef08a', '#10b981', '#f43f5e']
         });
       } catch (err) {}
-    }
 
-    onToggleDone(task.id, !task.is_done);
+      setTimeout(() => {
+        setIsTearingAnim(false);
+        onToggleDone(task.id, true);
+      }, 350);
+    } else {
+      // Untear / tape back
+      onToggleDone(task.id, false);
+    }
   };
 
-  // 2. REALISTIC CRUMPLE & FLY-TO-DUSTBIN ACTION
-  const handleDelete = (e) => {
+  // =========================================================================
+  // 2. NATURAL PAPER CRUMPLE & TOSS
+  // =========================================================================
+  const handleCrumpleAndDelete = (e) => {
     e.stopPropagation();
     playCrumpleSound();
 
@@ -54,22 +70,34 @@ export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) 
       const cardRect = cardRef.current.getBoundingClientRect();
       const binEl = document.getElementById('dorm-dustbin');
 
-      let targetDeltaX = 250;
-      let targetDeltaY = 350;
+      let dx = 280;
+      let dy = 380;
 
       if (binEl) {
         const binRect = binEl.getBoundingClientRect();
-        targetDeltaX = (binRect.left + binRect.width / 2) - (cardRect.left + cardRect.width / 2);
-        targetDeltaY = (binRect.top + binRect.height / 2) - (cardRect.top + cardRect.height / 2);
+        dx = (binRect.left + binRect.width / 2) - (cardRect.left + cardRect.width / 2);
+        dy = (binRect.top + binRect.height / 2) - (cardRect.top + cardRect.height / 2);
       }
 
-      setCrumpleTransform({ x: targetDeltaX, y: targetDeltaY });
-      setIsCrumpling(true);
+      setTargetVector({ x: dx, y: dy });
 
-      // Complete deletion when paper ball lands inside bin
+      // Phase 1: Wrinkling & folding creases appear (0 - 200ms)
+      setCrumplePhase('wrinkling');
+
+      // Phase 2: Crunches into a 3D lumpy paper wad (200ms - 420ms)
+      setTimeout(() => {
+        setCrumplePhase('wadding');
+      }, 200);
+
+      // Phase 3: Takes flight in an arc towards the dustbin (420ms - 820ms)
+      setTimeout(() => {
+        setCrumplePhase('flying');
+      }, 400);
+
+      // Phase 4: Lands in dustbin & gets deleted (820ms)
       setTimeout(() => {
         onDelete(task.id);
-      }, 700);
+      }, 820);
     } else {
       onDelete(task.id);
     }
@@ -96,33 +124,65 @@ export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) 
     );
   };
 
+  // Dynamic styling during crumple stages
+  const getCrumpleStyles = () => {
+    if (crumplePhase === 'wrinkling') {
+      return {
+        transform: 'scale(0.88) perspective(500px) rotateX(15deg) rotateY(-12deg)',
+        boxShadow: 'inset 8px 8px 18px rgba(0,0,0,0.35), inset -8px -8px 18px rgba(0,0,0,0.3)',
+        borderRadius: '16px',
+        transition: 'all 0.2s ease-in-out'
+      };
+    }
+    if (crumplePhase === 'wadding') {
+      return {
+        transform: 'scale(0.45) rotate(120deg)',
+        transition: 'all 0.2s ease-in'
+      };
+    }
+    if (crumplePhase === 'flying') {
+      return {
+        transform: `translate(${targetVector.x}px, ${targetVector.y}px) scale(0.12) rotate(760deg)`,
+        opacity: 0,
+        zIndex: 50,
+        transition: 'transform 0.42s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.42s ease-in'
+      };
+    }
+    return {};
+  };
+
   return (
     <div
       ref={cardRef}
-      style={isCrumpling ? {
-        '--target-x': `${crumpleTransform.x}px`,
-        '--target-y': `${crumpleTransform.y}px`,
-        transform: `translate(${crumpleTransform.x}px, ${crumpleTransform.y}px) scale(0.12) rotate(720deg)`,
-        transition: 'transform 0.68s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.68s ease-in',
-        opacity: 0,
-        zIndex: 50,
-        borderRadius: '50%'
-      } : {}}
+      style={getCrumpleStyles()}
       className={`relative group transition-all duration-300 ${defaultRotation} ${
-        isCrumpling ? 'crumpled-paper-ball pointer-events-none' : ''
-      }`}
+        crumplePhase ? 'pointer-events-none' : ''
+      } ${crumplePhase === 'wadding' || crumplePhase === 'flying' ? 'lumpy-paper-wad' : ''}`}
     >
       {/* =========================================================================
-          STATE A: TASK IS DONE -> PHYSICALLY TORN IN TWO PIECES!
+          CRUMPLE OVERLAY: CREASES APPEAR WHEN FOLDING
+          ========================================================================= */}
+      {crumplePhase === 'wrinkling' && (
+        <div className="absolute inset-0 z-30 wrinkle-crease-overlay rounded-2xl pointer-events-none opacity-80"></div>
+      )}
+
+      {/* =========================================================================
+          TEAR SWEEP ANIMATION: UNZIPPING RIP SEAM ACROSS PAPER
+          ========================================================================= */}
+      {isTearingAnim && (
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-40 h-4 bg-white/90 border-y-2 border-dashed border-red-500 animate-tear-sweep pointer-events-none shadow-lg"></div>
+      )}
+
+      {/* =========================================================================
+          STATE A: TASK IS DONE -> NATURALLY TORN PIECES WITH FIBER FRINGE
           ========================================================================= */}
       {task.is_done ? (
         <div className="relative">
-          {/* 3D Pushpin firmly holding the top torn half */}
+          {/* 3D Pushpin firmly pinning top half */}
           <div className={`pushpin-3d ${pinColor}`}></div>
 
-          {/* TOP TORN HALF */}
-          <div className="bg-[#fff9c4] text-neutral-900 rounded-t-2xl p-4 pb-6 shadow-md border-t-4 border-emerald-500 torn-edge-bottom relative">
-            {/* Top Washi Tape Badges */}
+          {/* TOP TORN PIECE */}
+          <div className="bg-[#fff9c4] text-neutral-900 rounded-t-2xl p-4 pb-5 shadow-md border-t-4 border-emerald-500 natural-tear-top relative">
             <div className="flex items-center justify-between gap-1 text-[10px] font-bold mb-2 pt-0.5">
               <span className="px-2 py-0.5 rounded washi-tape text-neutral-800 font-mono tracking-wider">
                 {task.category || 'Academic'}
@@ -132,28 +192,28 @@ export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) 
               </span>
             </div>
 
-            {/* Task Title (Ripped through) */}
             <h4 className="font-bold text-xs sm:text-sm text-neutral-500 line-through leading-snug">
               {task.title}
             </h4>
 
-            {/* Realistic Ink Stamp Slammed across the rip */}
-            <div className="absolute -bottom-4 right-6 z-20 animate-stamp-slam pointer-events-none">
+            {/* White paper fiber frayed deckle edge */}
+            <div className="paper-fiber-fringe"></div>
+
+            {/* Real ink stamp slammed across the rip */}
+            <div className="absolute -bottom-3 right-5 z-20 animate-stamp-slam pointer-events-none">
               <div className="border-3 border-emerald-600 bg-emerald-50/95 text-emerald-800 font-mono font-black text-xs uppercase px-2.5 py-1 rounded shadow-lg tracking-wider transform -rotate-12">
                 💯 TORN & CLEARED
               </div>
             </div>
           </div>
 
-          {/* VISIBLE RIPPED PAPER GAP (Showing the Corkboard underneath) */}
+          {/* VISIBLE RIPPED PAPER GAP */}
           <div className="h-3.5"></div>
 
-          {/* BOTTOM TORN HALF (Dropped down and tilted crookedly) */}
-          <div className="bg-[#fff9c4] text-neutral-900 rounded-b-2xl p-4 pt-4 shadow-lg border-b-2 border-emerald-500/40 torn-edge-top animate-tear-drop opacity-95">
-            {/* Due date */}
+          {/* BOTTOM TORN PIECE (Dropped down with curled edges) */}
+          <div className="bg-[#fff9c4] text-neutral-900 rounded-b-2xl p-4 pt-4 shadow-lg border-b-2 border-emerald-500/40 natural-tear-bottom animate-tear-drop-natural opacity-95 relative">
             {renderRemainingTime()}
 
-            {/* Group Role if present */}
             {task.group_name && (
               <div className="mt-2 text-[10px] bg-neutral-900/5 px-2 py-1 rounded-md flex items-center justify-between font-mono text-neutral-600">
                 <span className="font-bold">👥 {task.group_name}</span>
@@ -165,10 +225,9 @@ export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) 
               </div>
             )}
 
-            {/* Bottom Controls */}
             <div className="mt-3 pt-2 border-t border-black/10 flex items-center justify-between text-xs">
               <button
-                onClick={handleToggle}
+                onClick={handleTear}
                 className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 transition-all cursor-pointer shadow-sm"
                 title="Tape back together and reopen"
               >
@@ -176,7 +235,7 @@ export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) 
               </button>
 
               <button
-                onClick={handleDelete}
+                onClick={handleCrumpleAndDelete}
                 className="p-1 rounded-lg hover:bg-rose-100 text-neutral-400 hover:text-rose-600 transition-colors text-xs cursor-pointer"
                 title="Crumple and toss in dustbin"
               >
@@ -189,7 +248,7 @@ export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) 
         /* =========================================================================
            STATE B: TASK IS OPEN -> CLEAN PINNED STUDY NOTE
            ========================================================================= */
-        <div className={`bg-[#fef9c3] text-neutral-900 rounded-2xl p-4 shadow-xl border-t-4 hover:scale-[1.02] hover:rotate-0 transition-all ${
+        <div className={`bg-[#fef9c3] text-neutral-900 rounded-2xl p-4 shadow-xl border-t-4 hover:scale-[1.02] hover:rotate-0 transition-all relative overflow-hidden ${
           task.priority === 'High' ? 'border-rose-500' : 'border-amber-400'
         }`}>
           {/* 3D Pushpin */}
@@ -245,7 +304,7 @@ export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) 
           {/* Footer Actions */}
           <div className="mt-3 pt-2 border-t border-black/10 flex items-center justify-between text-xs">
             <button
-              onClick={handleToggle}
+              onClick={handleTear}
               className="px-3 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
               title="Physically tear paper in half to complete!"
             >
@@ -253,7 +312,7 @@ export default function PinnedTaskCard({ task, index, onToggleDone, onDelete }) 
             </button>
 
             <button
-              onClick={handleDelete}
+              onClick={handleCrumpleAndDelete}
               className="p-1 rounded-lg hover:bg-rose-100 text-neutral-400 hover:text-rose-600 transition-colors text-xs cursor-pointer"
               title="Crumple and toss in dustbin"
             >
