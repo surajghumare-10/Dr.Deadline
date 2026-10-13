@@ -49,22 +49,102 @@
   z-index: 30;
 }
 
-/* Torn paper effect */
-.torn-paper-edge {
-  position: relative;
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 8px,
-    rgba(239, 68, 68, 0.2) 8px,
-    rgba(239, 68, 68, 0.2) 16px
+/* Realistic Jagged Torn Paper Edges */
+.torn-edge-bottom {
+  clip-path: polygon(
+    0% 0%, 
+    100% 0%, 
+    100% calc(100% - 10px), 
+    95% 100%, 
+    90% calc(100% - 8px), 
+    85% 100%, 
+    80% calc(100% - 9px), 
+    75% 100%, 
+    70% calc(100% - 8px), 
+    65% 100%, 
+    60% calc(100% - 9px), 
+    55% 100%, 
+    50% calc(100% - 8px), 
+    45% 100%, 
+    40% calc(100% - 9px), 
+    35% 100%, 
+    30% calc(100% - 8px), 
+    25% 100%, 
+    20% calc(100% - 9px), 
+    15% 100%, 
+    10% calc(100% - 8px), 
+    5% 100%, 
+    0% calc(100% - 9px)
   );
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+}
+
+.torn-edge-top {
+  clip-path: polygon(
+    0% 9px, 
+    5% 0%, 
+    10% 8px, 
+    15% 0%, 
+    20% 9px, 
+    25% 0%, 
+    30% 8px, 
+    35% 0%, 
+    40% 9px, 
+    45% 0%, 
+    50% 8px, 
+    55% 0%, 
+    60% 9px, 
+    65% 0%, 
+    70% 8px, 
+    75% 0%, 
+    80% 9px, 
+    85% 0%, 
+    90% 8px, 
+    95% 0%, 
+    100% 10px, 
+    100% 100%, 
+    0% 100%
+  );
+}
+
+/* Tear Drop Animation */
+@keyframes tear-drop {
+  0% { transform: translateY(0) rotate(0deg); }
+  40% { transform: translateY(18px) rotate(-4deg); }
+  75% { transform: translateY(10px) rotate(-2deg); }
+  100% { transform: translateY(12px) rotate(-3deg); }
+}
+
+.animate-tear-drop {
+  animation: tear-drop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Ink Stamp Slam Animation */
+@keyframes stamp-slam {
+  0% { transform: scale(3.5) rotate(-25deg); opacity: 0; }
+  70% { transform: scale(0.92) rotate(-8deg); opacity: 0.95; }
+  100% { transform: scale(1) rotate(-10deg); opacity: 0.9; }
+}
+
+.animate-stamp-slam {
+  animation: stamp-slam 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 /* Realistic Washi Tape */
 .washi-tape {
-  background: rgba(254, 240, 138, 0.85);
+  background: rgba(254, 240, 138, 0.9);
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   border-left: 2px dashed rgba(0,0,0,0.1);
   border-right: 2px dashed rgba(0,0,0,0.1);
+}
+
+/* 3D Wrinkled Crumpled Paper Ball */
+.crumpled-paper-ball {
+  border-radius: 45% 55% 48% 52% / 55% 45% 55% 45%;
+  background: 
+    radial-gradient(circle at 30% 30%, #ffffff 0%, #f1f5f9 25%, #cbd5e1 55%, #64748b 90%, #334155 100%);
+  box-shadow: 
+    inset -5px -5px 10px rgba(0,0,0,0.45),
+    inset 4px 4px 8px rgba(255,255,255,0.7),
+    0 10px 25px rgba(0,0,0,0.5);
 }
